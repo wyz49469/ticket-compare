@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推送链接测试 — 12306 小程序</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 16px; background: #f5f5f5; }
+        .card { background: white; border-radius: 12px; padding: 16px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; font-size: 16px; }
+        .scheme { background: #1a1a2e; color: #00ff88; padding: 8px; border-radius: 6px; font-size: 11px; word-break: break-all; margin: 8px 0; }
+        img { display: block; margin: 8px auto; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #1677ff; color: white; border-radius: 6px; text-decoration: none; margin: 4px; font-size: 14px; }
+        h1 { font-size: 18px; }
+        .tip { background: #fff3cd; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <h1>推送链接测试 — 12306 购票</h1>
+    <p>路线: 北京 → 长沙 | 日期: 2026-05-13</p>
+    <div class="tip">
+        <b>测试方法：</b>用手机打开本页面，依次点击每个链接，观察是否能打开12306小程序/网页。<br>
+        <b>QR码：</b>用微信/支付宝扫对应二维码测试。
+    </div>
+    
+    <div class="card">
+        <h3>测试：微信小程序 (weixin://)</h3>
+        <div class="scheme">weixin://dl/business/?appid=wx3a455a4f1266a42a&path=pages%2Fticket%2Fquery%2Fquery&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13</div>
+        <a class="btn" href="weixin://dl/business/?appid=wx3a455a4f1266a42a&path=pages%2Fticket%2Fquery%2Fquery&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13">点击测试</a>
+        <br>
+        <img src="push_weixin.png" width="200" alt="QR">
+    </div>
+    <div class="card">
+        <h3>测试：支付宝小程序 (alipays://)</h3>
+        <div class="scheme">alipays://platformapi/startapp?appId=20000135</div>
+        <a class="btn" href="alipays://platformapi/startapp?appId=20000135">点击测试</a>
+        <br>
+        <img src="push_alipay.png" width="200" alt="QR">
+    </div>
+    <div class="card">
+        <h3>测试：网页版降级</h3>
+        <div class="scheme">https://kyfw.12306.cn/otn/leftTicket/init?linktypeid=dc&fs=BJP&ts=CSQ&date=2026-05-13&flag=N%2CN%2CY</div>
+        <a class="btn" href="https://kyfw.12306.cn/otn/leftTicket/init?linktypeid=dc&fs=BJP&ts=CSQ&date=2026-05-13&flag=N%2CN%2CY">点击测试</a>
+        <br>
+        <img src="push_web.png" width="200" alt="QR">
+    </div>
+    <div class="card">
+        <h3>测试：支付宝桥接 (ds.alipay.com)</h3>
+        <div class="scheme">https://ds.alipay.com/?scheme=alipays%3A%2F%2Fplatformapi%2Fstartapp%3FappId%3D20000135</div>
+        <a class="btn" href="https://ds.alipay.com/?scheme=alipays%3A%2F%2Fplatformapi%2Fstartapp%3FappId%3D20000135">点击测试</a>
+        <br>
+        <img src="push_alipay_bridge.png" width="200" alt="QR">
+    </div>
+    <div class="tip">
+        <b>预期结果：</b><br>
+        1. weixin:// — 微信内点击应打开12306小程序（可能被拦截，因12306未开通明文Scheme）<br>
+        2. alipays:// — 支付宝扫/点击可打开12306小程序首页（已确认可用）<br>
+        3. 网页版 — 任何环境均可打开，但搜索参数无法预填（12306用Cookie而非URL参数）<br>
+        4. 桥接 — 浏览器/微信内点击跳转支付宝打开12306
+    </div>
+</body>
+</html>

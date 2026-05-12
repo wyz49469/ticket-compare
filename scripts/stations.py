@@ -12,6 +12,7 @@ from urllib import request
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_FILE = os.path.join(SCRIPT_DIR, "stations.json")
+CACHE_FILE_FULL = os.path.join(SCRIPT_DIR, "stations_full.json")
 
 STATION_URL = (
     "https://kyfw.12306.cn/otn/resources/js/framework/"
@@ -39,13 +40,18 @@ def download_stations():
 
     # 解析 @站名拼音|站名|代码|拼音|简拼|序号 格式
     stations = {}
-    for m in re.finditer(r"@[^|]+\|([^|]+)\|([A-Z]+)\|[^|]+\|[^|]+\|\d+", text):
+    stations_full = {}
+    for m in re.finditer(r"@[^|]+\|([^|]+)\|([A-Z]+)\|([^|]+)\|[^|]+\|\d+", text):
         name = m.group(1)
         code = m.group(2)
+        pinyin = m.group(3)
         stations[name] = code
+        stations_full[name] = {"code": code, "pinyin": pinyin}
 
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(stations, f, ensure_ascii=False, indent=2)
+    with open(CACHE_FILE_FULL, "w", encoding="utf-8") as f:
+        json.dump(stations_full, f, ensure_ascii=False, indent=2)
 
     return stations
 
@@ -56,6 +62,18 @@ def load_stations(force_refresh=False):
         with open(CACHE_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return download_stations()
+
+
+def load_stations_with_pinyin(force_refresh=False):
+    """加载含拼音的车站映射 {name: {code, pinyin}}（优先用缓存）。"""
+    if not force_refresh and os.path.exists(CACHE_FILE_FULL):
+        with open(CACHE_FILE_FULL, "r", encoding="utf-8") as f:
+            return json.load(f)
+    download_stations()
+    if os.path.exists(CACHE_FILE_FULL):
+        with open(CACHE_FILE_FULL, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
 
 
 def find_station(stations, city):

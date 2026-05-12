@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付宝 Scheme 12306 小程序测试</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 16px; background: #f5f5f5; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; }
+        .scheme { background: #1a1a2e; color: #00ff88; padding: 10px; border-radius: 6px; font-size: 12px; word-break: break-all; margin: 10px 0; }
+        img { display: block; margin: 10px auto; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #1677ff; color: white; border-radius: 6px; text-decoration: none; margin: 5px; }
+        .btn-alipay { background: #1677ff; }
+        .btn-web { background: #52c41a; }
+    </style>
+</head>
+<body>
+    <h1>🧪 支付宝 Scheme 拉起 12306 小程序测试</h1>
+    <p><b>12306 appId:</b> 20000135 &nbsp;|&nbsp; <b>路线:</b> 北京 → 长沙 &nbsp;|&nbsp; <b>日期:</b> 2026-05-13</p>
+    <p>👇 点击 alipays:// 链接或扫描 QR 码测试（需在手机上打开此页面）</p>
+
+    <div class="card" id="test1">
+        <h3>测试 1：打开 12306 首页（无参数）</h3>
+        <div class="scheme">alipays://platformapi/startapp?appId=20000135</div>
+        <a class="btn btn-alipay" href="alipays://platformapi/startapp?appId=20000135">唤起支付宝</a>
+        <a class="btn btn-web" href="https://ds.alipay.com/?scheme=alipays%3A%2F%2Fplatformapi%2Fstartapp%3FappId%3D20000135">桥接URL</a>
+        <br><br>
+        <img src="../scripts/output/alipay_test/test1_homepage.png" width="220" alt="QR test1">
+    </div>
+
+    <div class="card" id="test2">
+        <h3>测试 2：首页 + query 参数</h3>
+        <div class="scheme">alipays://platformapi/startapp?appId=20000135&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13</div>
+        <a class="btn btn-alipay" href="alipays://platformapi/startapp?appId=20000135&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13">唤起支付宝</a>
+        <br><br>
+        <img src="../scripts/output/alipay_test/test2_query_params.png" width="220" alt="QR test2">
+    </div>
+
+    <div class="card" id="test3">
+        <h3>测试 3：购票页路径（pages/ticket/search）</h3>
+        <div class="scheme">alipays://platformapi/startapp?appId=20000135&page=pages%2Fticket%2Fsearch</div>
+        <a class="btn btn-alipay" href="alipays://platformapi/startapp?appId=20000135&page=pages%2Fticket%2Fsearch">唤起支付宝</a>
+        <br><br>
+        <img src="../scripts/output/alipay_test/test3_ticket_page.png" width="220" alt="QR test3">
+    </div>
+
+    <div class="card" id="test4">
+        <h3>测试 4：购票页 + query 参数</h3>
+        <div class="scheme">alipays://platformapi/startapp?appId=20000135&page=pages%2Fticket%2Fsearch&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13</div>
+        <a class="btn btn-alipay" href="alipays://platformapi/startapp?appId=20000135&page=pages%2Fticket%2Fsearch&query=from_station%3DBJP%26to_station%3DCSQ%26date%3D2026-05-13">唤起支付宝</a>
+        <br><br>
+        <img src="../scripts/output/alipay_test/test4_ticket_query.png" width="220" alt="QR test4">
+    </div>
+
+    <div class="card" id="test5">
+        <h3>测试 5：网页版降级链接</h3>
+        <div class="scheme">https://kyfw.12306.cn/otn/leftTicket/init?linktypeid=dc&fs=BJP&ts=CSQ&date=2026-05-13&flag=N,N,Y</div>
+        <a class="btn btn-web" href="https://kyfw.12306.cn/otn/leftTicket/init?linktypeid=dc&fs=BJP&ts=CSQ&date=2026-05-13&flag=N,N,Y">打开网页</a>
+        <br><br>
+        <img src="../scripts/output/alipay_test/test5_web_fallback.png" width="220" alt="QR test5">
+    </div>
+</body>
+</html>

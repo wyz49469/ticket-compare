@@ -250,6 +250,8 @@ def query_tickets(from_city, to_city, travel_date):
             "secret_key": secret_key,
             "dep_station": dep_station_name,
             "arr_station": arr_station_name,
+            "dep_station_code": dep_station_code,
+            "arr_station_code": arr_station_code,
             "dep_time": dep_time,
             "arr_time": arr_time,
             "duration_min": duration_min,

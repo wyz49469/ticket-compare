@@ -4,7 +4,7 @@ description: "智能出行比价助手：输入出发地和目的地，自动查
 license: MIT
 metadata:
   author: ticket-compare
-  version: "1.3.0"
+  version: "1.5.0"
 ---
 
 # 出行比价 Agent
@@ -360,11 +360,12 @@ python3 "$SKILL_DIR/scripts/query_flights.py" "<出发城市>" "<到达城市>" 
 ```
 确认推送付款信息到微信？
 
-[12306] 待付款
+🚄 待付款 — 携程 → 12306
   G89 北京西 → 长沙南
-  日期：2026-05-13  出发：09:00 → 到达：14:30
+  日期：2026-05-13  出发：09:00 → 14:30
   席位：二等座  ¥649
-  付款截止：30分钟内
+  付款截止：以携程页面为准
+  点击链接可直接进入 G89 车次预订页
 
 是否推送？
 ```
@@ -372,17 +373,16 @@ python3 "$SKILL_DIR/scripts/query_flights.py" "<出发城市>" "<到达城市>" 
 ### E2. 执行推送
 
 <MUST>
-> 必须携带 `--secret-key`（12306 字段）、`--from-code` / `--to-code`（车站电报码）用于生成直达付款链接
-> 机票必须携带 `--from-iata` / `--to-iata`（IATA 代码）生成携程直达链接
+> 火车票必须携带 `--from-code` / `--to-code`（车站电报码）生成直达链接
+> 机票必须携带 `--from-iata` / `--to-iata`（IATA 代码）
 </MUST>
 
-**火车票**（从 compare.py 归一化输出中提取 `secret_key`、`dep_station_name` 等字段）：
+**火车票**：
 
 ```bash
 python3 "$SKILL_DIR/scripts/wechat_push.py" \
   --mode train \
   --train-code "G89" \
-  --secret-key "abc123def456" \
   --from "北京西" \
   --to "长沙南" \
   --from-code "BJP" \
@@ -419,87 +419,49 @@ python3 "$SKILL_DIR/scripts/wechat_push.py" \
 
 ### E3. 输出格式
 
-推送成功时：
-
-```markdown
-## 付款信息已推送到微信
-
-> 请在付款截止前登录 12306 / 携程完成支付
-
-| 项目 | 详情 |
-|------|------|
-| 平台 | 12306 / 携程 |
-| 车次/航班 | {train_code} / {flight_code} |
-| 路线 | {from} → {to} |
-| 出发 | {date} {dep_time} |
-| 到达 | {date} {arr_time} |
-| 席位/舱位 | {seat_class} |
-| 票价 | ¥{price} |
-| 付款截止 | {pay_deadline} |
-| 付款链接 | [立即付款]({pay_url}) |
-```
+推送成功时输出 JSON，包含：
+- `pay_url`：携程车次直达链接（主链接）
+- `link_ctrip_web` / `link_ctrip_mobile` / `link_ctrip_app`：携程多端链接
+- `link_12306_web` / `link_12306_wechat`：12306 回退链接
+- `fallback_url`：网页备用
 
 未配置微信时（兜底，输出可分享的付款卡片）：
 
-```markdown
-## 可分享的付款卡片
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚄 待付款 — 携程 → 12306
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-> 微信推送未配置（需要 WECHAT_APPID / WECHAT_SECRET / WECHAT_OPENID 环境变量）
-> 复制以下付款卡片分享给微信好友：
+  北京西 → 长沙南
+  日期：2026-05-13
+  车次：🚄 G89
+  出发：09:00 → 到达：14:30
+  席位：二等座  票价：¥649
 
-========================================
-  [12306] 待付款 — 出行票务
-========================================
+  ── 付款信息 ──
+  截止：以携程页面为准
+  点击链接前往携程查看该车次并完成预订付款
 
-  {出发地} → {目的地}
-  日期：{date}
-  车次：[TRAIN] {train_code}
-  出发：{dep_time}  →  到达：{arr_time}
-  席位：{seat}
-  票价：¥{price}
-
-----------------------------------------
-  付款截止：30分钟内
-  请在30分钟内登录12306完成付款，超时订单自动取消
-----------------------------------------
-
-  立即付款：{pay_url}
-
-========================================
+  🚄 携程车次直达（推荐）：https://trains.ctrip.com/...&number=G89
+  📱 携程手机版：https://m.ctrip.com/.../train-detail?trainNo=G89
+  🌐 12306 备用：https://kyfw.12306.cn/otn/leftTicket/init?...
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ### E4. 付款直达链接生成逻辑
 
-`wechat_push.py` 现在为火车票生成 **3 种链接**（按优先级）：
+`wechat_push.py` 为火车票生成**携程车次直达链接**（主） + 12306 回退：
 
-| 类型 | 格式 | 说明 |
-|------|------|------|
-| 📱 微信小程序 URL Scheme | `weixin://dl/business/?appid={appid}&path={path}&query=from_station={code}&to_station={code}&date={date}` | **主链接** — 微信内点击直接跳转铁路12306小程序购票页 |
-| 🌐 明文 URL Scheme | `https://wxaurl.cn/{appid}/{path}?from_station={code}&to_station={code}&date={date}` | 微信官方格式，内外均可唤起小程序 |
-| 12306（浏览器） | `https://kyfw.12306.cn/otn/leftTicket/init?linktypeid=dc&fs={from_code}&ts={to_code}&date={date}&flag=N,N,Y` | 预填出发站、到达站、日期，用户登陆后直接进入预订页 |
-| 12306（微信小程序） | `weixin://dl/business/?appid=wx3a455a4f1266a42a&path=pages/ticket/query/query&query=from_station={from_code}&to_station={to_code}&date={date}` | 微信内直接打开12306小程序，无需跳转浏览器。appid=wx3a455a4f1266a42a是12306官方小程序固定ID |
+| 类型 | 说明 | 优先级 |
+|------|------|--------|
+| 携程预订直达 | `https://trains.ctrip.com/webapp/train-main/trainXPage?departStation={from_cn}&arriveStation={to_cn}&departDate={date}&trainNo={train_code}` | **主链接** — 直达车次预订确认页，填写乘客信息后支付 |
+| 携程 App | `ctrip://trainbooking?trainNo={train_code}` | 唤起携程 App |
+| 12306 微信小程序 | `weixin://dl/business/?appid=wx3a455a4f1266a42a&...` | 回退 |
+| 12306 网页版 | `https://kyfw.12306.cn/otn/leftTicket/init?...` | 最终回退 |
 
-**铁路12306 微信小程序配置：**
-- AppID: `wx3a455a4f1266a42a`（经公开资料确认）
-- 购票页面路径: `pages/ticket/query/query`
-- 查询参数: `from_station={站码}&to_station={站码}&date={YYYY-MM-DD}`
+**链接特点**：`trainXPage` 是携程的火车票确认下单页，直接展示该车次的票价、余票信息，用户只需填写乘客信息即可进入支付。无需拼音映射，直接用中文站名传参即可。
 
-**代码参考（`wechat_push.py` 中）：**
-```python
-WECHAT_MP_12306_APPID = "wx3a455a4f1266a42a"
-WECHAT_MP_12306_TICKET_PATH = "pages/ticket/query/query"
-```
-
-`build_12306_deep_link()` 返回 dict：
-```python
-{
-    "wechat_scheme": "weixin://dl/business/?...",
-    "wxaurl_scheme": "https://wxaurl.cn/...",
-    "web_url": "https://kyfw.12306.cn/...",
-}
-```
-
-付款卡片输出格式自动展示小程序链接和网页备用链接。
+> **携程策略优势**：直达车次预订确认页，跳过搜索和选择车次步骤。12306 无等价功能。
 
 <SHOULD>
 > 12306 付款时限为 30 分钟（从下单起算），卡片中必须标注

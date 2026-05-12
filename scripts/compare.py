@@ -58,6 +58,8 @@ def normalize_trains(train_data):
                     "booking_url": t.get("booking_url", ""),
                     "dep_station_name": t.get("dep_station", ""),
                     "arr_station_name": t.get("arr_station", ""),
+                    "dep_station_code": t.get("dep_station_code", ""),
+                    "arr_station_code": t.get("arr_station_code", ""),
                 })
                 break
 
